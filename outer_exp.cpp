@@ -4,11 +4,18 @@
 
 
 kln::rotor outer_exp(kln::branch phi){
+    /*
+    Implements the so3 outer exponential from bivectors to rotors
+    */
     kln::rotor phi2 = (phi*phi);
     return (1.0f + phi)/std::sqrt(1.0f - phi2.scalar());
 }
 
 kln::branch outer_exp_kinematic(kln::branch phi, kln::branch omega){
+    /*
+    This is the kinematic equation for the outer exponential map as found in
+    Hadfield H., Lasenby J., Screw Theory in Geometric Algebra for Constrained Rigid Body Dynamics AACA (2021)
+    */
     auto R = outer_exp(phi);
     auto omegaR = omega*R;
     return -0.5f*sqrtf(1.0f - (phi*phi).scalar())*(-as_branch(omegaR) + omegaR.scalar()*as_branch(R)/R.scalar());

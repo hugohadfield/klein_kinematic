@@ -4,11 +4,18 @@ from clifford.g3 import *
 
 
 def outer_exp(phi):
+    """
+    Implements the so3 outer exponential from bivectors to rotors
+    """
     phi2 = (phi*phi);
     return (1.0 + phi)/np.sqrt(1.0 - phi2.value[0]);
 
 
 def outer_exp_kinematic(phi, omega):
+    """
+    This is the kinematic equation for the outer exponential map as found in
+    Hadfield H., Lasenby J., Screw Theory in Geometric Algebra for Constrained Rigid Body Dynamics AACA (2021)
+    """
     R = outer_exp(phi);
     omegaR = omega*R;
     return -0.5*np.sqrt(1 - (phi*phi).value[0])*(-omegaR(2) + omegaR.value[0]*R(2)/R.value[0]);
