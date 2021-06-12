@@ -87,8 +87,6 @@ def test_se3():
 
     kin_output = cayley_kinematic(phi, omega);
     print(kin_output[2,3], kin_output[3,1], kin_output[1,2], kin_output[0,1], kin_output[0,2], kin_output[0,3])   
-    print(kin_output)
-    print(omega*phi)
 
 
 

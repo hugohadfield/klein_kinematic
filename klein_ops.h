@@ -9,6 +9,7 @@
     return out;
 }
 
+
 /// Rotor cast as branch
 [[nodiscard]] inline kln::branch KLN_VEC_CALL as_branch(kln::rotor b) noexcept
 {
@@ -16,6 +17,7 @@
     out.p1_ = b.p1_;
     return out;
 }
+
 
 /// Line cast as motor
 [[nodiscard]] inline kln::motor KLN_VEC_CALL as_motor(kln::line b) noexcept

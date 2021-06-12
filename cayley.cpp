@@ -33,13 +33,13 @@ kln::branch cayley_kinematic(kln::branch phi, kln::branch omega){
 }
 
 
-kln::motor cayley_kinematic(kln::line phi, kln::line omega){
+kln::line cayley_kinematic(kln::line phi, kln::line omega){
     /*
     This is the kinematic equation for the cayley map as found in
     Hadfield H., Lasenby J., Screw Theory in Geometric Algebra for Constrained Rigid Body Dynamics AACA (2021)
     */
     kln::motor omega_rot = as_motor(omega);
-    return (0.25f*(1.0f + phi)*omega_rot*(1.0f + (-1.0f*phi)));
+    return as_line(0.25f*(1.0f + phi)*omega_rot*(1.0f + (-1.0f*phi)));
 }
 
 
@@ -87,8 +87,7 @@ void test_se3(){
     auto kin_output = cayley_kinematic(phi, omega);
     std::cout << kin_output.e23() << " " << kin_output.e31() << " " << kin_output.e12() 
             << " " << kin_output.e01() << " " << kin_output.e02() << " " << kin_output.e03() << std::endl;  
-
-    std::cout << kin_output.scalar() << " " << kin_output.e0123() << std::endl;    
+  
 }
 
 
