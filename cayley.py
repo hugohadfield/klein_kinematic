@@ -77,7 +77,7 @@ def test_se3():
     l = -0.6
 
     phi = a*(e23) + b*(e3*e1) + c*(e12) + g*e01 + h*e02 + i*e03
-    omega = d*(e23) + e*(e3*e1) + f*(e12) + j*e01 + k*e02 + k*e03
+    omega = d*(e23) + e*(e3*e1) + f*(e12) + j*e01 + k*e02 + l*e03
 
     R = cayley_se3(phi)
     print(R.value[0], R[2,3], R[3,1], R[1,2], R[0,1], R[0,2], R[0,3], R[0,1,2,3])
@@ -88,6 +88,7 @@ def test_se3():
     kin_output = cayley_kinematic(phi, omega);
     print(kin_output[2,3], kin_output[3,1], kin_output[1,2], kin_output[0,1], kin_output[0,2], kin_output[0,3])   
     print(kin_output)
+    print(omega*phi)
 
 
 

@@ -86,7 +86,9 @@ void test_se3(){
 
     auto kin_output = cayley_kinematic(phi, omega);
     std::cout << kin_output.e23() << " " << kin_output.e31() << " " << kin_output.e12() 
-            << " " << kin_output.e01() << " " << kin_output.e02() << " " << kin_output.e03() << std::endl;    
+            << " " << kin_output.e01() << " " << kin_output.e02() << " " << kin_output.e03() << std::endl;  
+
+    std::cout << kin_output.scalar() << " " << kin_output.e0123() << std::endl;    
 }
 
 

@@ -72,3 +72,10 @@
     kln::motor out = as_motor(a);
     return out*b;
 }
+
+/// Line times motor
+[[nodiscard]] inline kln::motor KLN_VEC_CALL operator*(kln::line a, kln::motor b) noexcept
+{
+    kln::motor out = as_motor(a);
+    return out*b;
+}
