@@ -3,6 +3,23 @@
 #include "klein_ops.h"
 
 
+
+kln::branch outer_log(kln::rotor  R){
+    /*
+    For a given rotor this returns the bivector that when outer exponeniated gives the rotor
+    */
+    return as_branch(R)/R.scalar();
+}
+
+
+kln::line outer_log(kln::motor  R){
+    /*
+    For a given motor this returns the bivector that when outer exponeniated gives the rotor
+    */
+    return as_line(R)/R.scalar();
+}
+
+
 kln::rotor outer_exp(kln::branch phi){
     /*
     Implements the so3 outer exponential from bivectors to rotors
