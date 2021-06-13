@@ -3,6 +3,13 @@ import numpy as np
 from clifford.pga import *
 
 
+def outer_log(R):
+    """
+    For a given rotor this returns the bivector that when outer exponeniated gives the rotor
+    """
+    return R(2)/R.value[0]
+
+
 def outer_exp_so3(phi):
     """
     Implements the so3 outer exponential from bivectors to rotors
@@ -83,6 +90,13 @@ def test_se3():
     kin_output = outer_exp_kinematic_se3(phi, omega);
     print(kin_output[2,3], kin_output[3,1], kin_output[1,2], kin_output[0,1], kin_output[0,2], kin_output[0,3])   
 
+
+def test_outer_log():
+    for i in range(1000):
+        phi = layout.randomMV()(2)
+        R = outer_exp_se3(phi)
+        phi_log = outer_log(R)
+        np.testing.assert_allclose(phi.value, phi_log.value)
 
 
 if __name__ == "__main__":
