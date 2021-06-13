@@ -1,6 +1,7 @@
 #include <klein/klein.hpp>
 #include <klein/detail/geometric_product.hpp>
 
+
 /// Branch cast as rotor
 [[nodiscard]] inline kln::rotor KLN_VEC_CALL as_rotor(kln::branch b) noexcept
 {
@@ -28,6 +29,7 @@
     return out;
 }
 
+
 /// Motor cast as line
 [[nodiscard]] inline kln::line KLN_VEC_CALL as_line(kln::motor b) noexcept
 {
@@ -46,6 +48,7 @@
     return out;
 }
 
+
 /// Motor scalar addition
 [[nodiscard]] inline kln::motor KLN_VEC_CALL operator+(float a, kln::motor b) noexcept
 {
@@ -55,11 +58,13 @@
     return out;
 }
 
+
 /// Line scalar addition
 [[nodiscard]] inline kln::motor KLN_VEC_CALL operator+(float a, kln::line b) noexcept
 {
     return a + as_motor(b);
 }
+
 
 /// Branch times rotor
 [[nodiscard]] inline kln::rotor KLN_VEC_CALL operator*(kln::branch a, kln::rotor b) noexcept
@@ -68,6 +73,7 @@
     return out*b;
 }
 
+
 /// Line times rotor
 [[nodiscard]] inline kln::motor KLN_VEC_CALL operator*(kln::line a, kln::rotor b) noexcept
 {
@@ -75,9 +81,26 @@
     return out*b;
 }
 
+
 /// Line times motor
 [[nodiscard]] inline kln::motor KLN_VEC_CALL operator*(kln::line a, kln::motor b) noexcept
 {
     kln::motor out = as_motor(a);
     return out*b;
+}
+
+
+/// Rotor times line
+[[nodiscard]] inline kln::motor KLN_VEC_CALL operator*(kln::rotor a, kln::line b) noexcept
+{
+    kln::motor out = as_motor(b);
+    return a*out;
+}
+
+
+/// Motor times line
+[[nodiscard]] inline kln::motor KLN_VEC_CALL operator*(kln::motor a, kln::line b) noexcept
+{
+    kln::motor out = as_motor(b);
+    return a*out;
 }

@@ -17,8 +17,8 @@ kln::motor cayley(kln::line phi){
     Implements the simplified se3 cayley map from bivectors to rotors
     */
     kln::motor phi2 = (phi*phi);
-    auto denominator = 1.0f - phi2.scalar();
-    auto phi2_4 = kln::motor(0,0,0,0,0,0,0,phi2.e0123());
+    float denominator = 1.0f - phi2.scalar();
+    kln::motor phi2_4 = kln::motor(0,0,0,0,0,0,0,phi2.e0123());
     return (1.0f + phi)*(1.0f + phi)*(denominator + phi2_4)/(denominator*denominator);
 }
 
@@ -29,7 +29,7 @@ kln::branch cayley_kinematic(kln::branch phi, kln::branch omega){
     Hadfield H., Lasenby J., Screw Theory in Geometric Algebra for Constrained Rigid Body Dynamics AACA (2021)
     */
     kln::rotor omega_rot = as_rotor(omega);
-    return as_branch(0.25f*(1.0f + phi)*omega_rot*(1.0f + (-1.0f*phi)));
+    return 0.25f*as_branch((1.0f + phi)*omega_rot*(1.0f + -phi));
 }
 
 
@@ -39,7 +39,7 @@ kln::line cayley_kinematic(kln::line phi, kln::line omega){
     Hadfield H., Lasenby J., Screw Theory in Geometric Algebra for Constrained Rigid Body Dynamics AACA (2021)
     */
     kln::motor omega_rot = as_motor(omega);
-    return as_line(0.25f*(1.0f + phi)*omega_rot*(1.0f + (-1.0f*phi)));
+    return 0.25f*as_line((1.0f + phi)*omega_rot*(1.0f + -phi));
 }
 
 
@@ -57,7 +57,7 @@ void test_so3(){
     kln::rotor R = cayley(phi);
     std::cout << R.scalar() << " " << R.e23() << " " << R.e31() << " " << R.e12() << std::endl;    
 
-    auto kin_output = cayley_kinematic(phi, omega);
+    kln::branch kin_output = cayley_kinematic(phi, omega);
     std::cout << kin_output.e23() << " " << kin_output.e31() << " " << kin_output.e12() << std::endl;    
 }
 
@@ -84,7 +84,7 @@ void test_se3(){
     std::cout << R.scalar() << " " << R.e23() << " " << R.e31() << " " << R.e12() 
         << " " << R.e01() << " " << R.e02() << " " << R.e03() << " " << R.e0123() << std::endl;    
 
-    auto kin_output = cayley_kinematic(phi, omega);
+    kln::line kin_output = cayley_kinematic(phi, omega);
     std::cout << kin_output.e23() << " " << kin_output.e31() << " " << kin_output.e12() 
             << " " << kin_output.e01() << " " << kin_output.e02() << " " << kin_output.e03() << std::endl;  
   
