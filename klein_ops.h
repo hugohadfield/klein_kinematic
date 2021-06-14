@@ -1,3 +1,5 @@
+#pragma once
+
 #include <klein/klein.hpp>
 #include <klein/detail/geometric_product.hpp>
 
@@ -64,6 +66,12 @@
 {
     return a + as_motor(b);
 }
+
+[[nodiscard]] inline kln::motor KLN_VEC_CALL operator+(kln::line b, float a) noexcept
+{
+    return a + b;
+}
+
 
 
 /// Branch times rotor

@@ -45,5 +45,3 @@ target_compile_options(outer_exp
     -Wno-comment # Needed for doxygen
 )
 target_link_options(outer_exp PRIVATE -fno-omit-frame-pointer -fsanitize=address)
-
-
