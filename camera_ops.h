@@ -11,6 +11,9 @@ using ceres::Solve;
 using ceres::Solver;
 
 
+#define CERES_NPOINTS_2X 10
+
+
 void project_to_camera(kln::motor &R, 
                         std::vector<std::shared_ptr<kln::point>> &points, 
                         std::vector<std::shared_ptr<kln::point>> &output_points){
@@ -142,7 +145,7 @@ void find_camera(kln::line initial_biv,
 
     // Make a cost function pointer that is then owned by the problem
     CostFunction* cost_function =
-        new NumericDiffCostFunction<NumericDiffCostFunctor, ceres::CENTRAL, 400, 6>(
+        new NumericDiffCostFunction<NumericDiffCostFunctor, ceres::CENTRAL, CERES_NPOINTS_2X, 6>(
             new NumericDiffCostFunctor{points, camera_points});
     
     problem.AddResidualBlock(cost_function, nullptr, &x[0]);

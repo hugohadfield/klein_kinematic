@@ -46,7 +46,7 @@ void write_points(std::ofstream& file, std::vector<std::shared_ptr<kln::point>>&
 
 int main(){
 
-    const unsigned int npoints = 200;
+    const unsigned int npoints = CERES_NPOINTS_2X/2;
 
     std::ofstream output_stream;
     output_stream.open("200.txt");
