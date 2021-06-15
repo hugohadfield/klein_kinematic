@@ -112,8 +112,8 @@ void find_camera(kln::line initial_biv,
             kln::line biv_est = {parameters[0], parameters[1], parameters[2], 
                                 parameters[3], parameters[4], parameters[5]};
             // kln::motor R_est = kln::exp(biv_est);
-            // kln::motor R_est = outer_exp(biv_est);
-            kln::motor R_est = cayley(biv_est);
+            kln::motor R_est = outer_exp(biv_est);
+            // kln::motor R_est = cayley(biv_est);
 
             // Calculate the reprojection error
             residuals[0] = reprojection_error(R_est, this->points, this->camera_points);
@@ -131,8 +131,8 @@ void find_camera(kln::line initial_biv,
             kln::line biv_est = {parameters[0], parameters[1], parameters[2], 
                                 parameters[3], parameters[4], parameters[5]};
             // kln::motor R_est = kln::exp(biv_est);
-            // kln::motor R_est = outer_exp(biv_est);
-            kln::motor R_est = cayley(biv_est);
+            kln::motor R_est = outer_exp(biv_est);
+            // kln::motor R_est = cayley(biv_est);
 
             // Calculate the reprojection error
             reprojection_residuals(R_est, this->points, this->camera_points, residuals);
