@@ -10,13 +10,6 @@
 #include "camera_ops.h"
 
 
-#include "ceres/ceres.h"
-using ceres::NumericDiffCostFunction;
-using ceres::CostFunction;
-using ceres::Problem;
-using ceres::Solve;
-using ceres::Solver;
-
 
 // Set up the random number generator
 std::default_random_engine default_generator;
@@ -51,88 +44,17 @@ void write_points(std::ofstream& file, std::vector<std::shared_ptr<kln::point>>&
 
 
 
-void find_camera(kln::line initial_biv,
-                std::vector<std::shared_ptr<kln::point>>& points, 
-                std::vector<std::shared_ptr<kln::point>>& camera_points){
-
-  // The variable to solve for with its initial value. It will be
-  // mutated in place by the solver.
-  double x[6];
-  x[0] = initial_biv.e01();
-  x[1] = initial_biv.e02();
-  x[2] = initial_biv.e03();
-  x[3] = initial_biv.e23();
-  x[4] = initial_biv.e31();
-  x[5] = initial_biv.e12();
-  const double initial_x[6] = {x[0], x[1], x[2], x[3], x[4], x[5]};
-
-  // Build the problem.
-  Problem problem;
-
-
-    // Set up the cost function
-    struct NumericDiffCostFunctor {
-        std::vector<std::shared_ptr<kln::point>>& points;
-        std::vector<std::shared_ptr<kln::point>>& camera_points;
-        bool operator()(const double* const parameters, double* residuals) const {
-            // Set up a camera
-            kln::line biv_est = {parameters[0], parameters[1], parameters[2], 
-                                parameters[3], parameters[4], parameters[5]};
-            kln::motor R_est = kln::exp(biv_est);
-
-            // Calculate the reprojection error
-            residuals[0] = (double) reprojection_error(R_est, this->points, this->camera_points);
-            return true;
-        }
-    };
-
-    // Instantiate the struct to capture the local data
-    NumericDiffCostFunctor instantiated = {points, camera_points};
-
-
-    CostFunction* cost_function =
-        new NumericDiffCostFunction<NumericDiffCostFunctor, ceres::CENTRAL, 1, 6>(
-            &instantiated);
-    
-    problem.AddResidualBlock(cost_function, nullptr, &x[0]);
-
-     // Run the solver!
-    Solver::Options options;
-    options.minimizer_progress_to_stdout = true;
-    Solver::Summary summary;
-    Solve(options, &problem, &summary);
-    std::cout << summary.BriefReport() << "\n";
-    std::cout << "x[0] : " << initial_x[0] << " -> " << x[0] << "\n";
-    std::cout << "x[1] : " << initial_x[1] << " -> " << x[1] << "\n";
-    std::cout << "x[2] : " << initial_x[2] << " -> " << x[2] << "\n";
-    std::cout << "x[3] : " << initial_x[3] << " -> " << x[3] << "\n";
-    std::cout << "x[4] : " << initial_x[4] << " -> " << x[4] << "\n";
-    std::cout << "x[5] : " << initial_x[5] << " -> " << x[5] << "\n";
-
-    // Calculate the cost before and after optimisation
-    double op;
-    instantiated(initial_x, &op);
-    std::cout << "pre cost " << op << std::endl;
-
-    instantiated(x, &op);
-    std::cout << "post cost " << op << std::endl;
-
-
-}
-
-
-
-
-
-
 int main(){
+
+    const unsigned int npoints = 200;
+
     std::ofstream output_stream;
-    output_stream.open("100.txt");
+    output_stream.open("200.txt");
 
     // Generate a load of points
     std::vector<std::shared_ptr<kln::point>> points;
-    points.reserve(100);
-    generate_random_points(points, 100);
+    points.reserve(npoints);
+    generate_random_points(points, npoints);
 
     std::cout << points.size() << std::endl;
 
@@ -161,15 +83,17 @@ int main(){
 
 
     // Set up a false camera
-    kln::line biv_est{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.3f};
+    kln::line biv_est{0.0f, 0.1f, 0.0f, 0.0f, 0.0f, 3.8f};
     kln::motor R_est = kln::exp(biv_est);
 
     // Calculate the reprojection error
     output = reprojection_error(R_est, points, camera_points);
     std::cout << output << std::endl;
 
+    kln::line biv_est_outer = outer_log(R_est);
+    kln::line biv_est_cayley = cayley(R_est);
 
-    find_camera(biv_est, points, camera_points);
+    find_camera(biv_est_outer, points, camera_points); 
 
 }
 

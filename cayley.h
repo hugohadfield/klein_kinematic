@@ -4,6 +4,13 @@
 #include "klein_ops.h"
 
 
+kln::motor explicit_motor_inverse(kln::motor X){
+    kln::motor mult = (X*~X);
+    float scale = mult.scalar();
+    return (~X)*((scale + kln::motor(0,0,0,0,0,0,0,-mult.e0123()))/(scale*scale));
+}
+
+
 kln::rotor cayley(kln::branch phi){
     /*
     Implements the simplified so3 cayley map from bivectors to rotors
@@ -15,12 +22,29 @@ kln::rotor cayley(kln::branch phi){
 
 kln::motor cayley(kln::line phi){
     /*
-    Implements the simplified se3 cayley map from bivectors to rotors
+    Implements the simplified se3 cayley map from bivectors to motors
     */
     kln::motor phi2 = (phi*phi);
     float denominator = 1.0f - phi2.scalar();
     kln::motor phi2_4 = kln::motor(0,0,0,0,0,0,0,phi2.e0123());
     return (1.0f + phi)*(1.0f + phi)*(denominator + phi2_4)/(denominator*denominator);
+}
+
+
+kln::motor cayley_explicit(kln::line phi){
+    /*
+    Implements the explicit se3 cayley map from bivectors to motors
+    */
+   return (1.0f + phi)*explicit_motor_inverse(1.0f + -phi);
+}
+
+
+
+kln::line cayley(kln::motor R){
+    /*
+    Implements the simplified se3 cayley map from motors to bivectors
+    */
+    return -as_line((1.0f + -R)*explicit_motor_inverse(1.0f + R));
 }
 
 
