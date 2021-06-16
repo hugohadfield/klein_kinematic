@@ -14,6 +14,59 @@ using ceres::Solver;
 #define CERES_NPOINTS_2X 10
 
 
+
+void generate_internal_matrix(float params[5], float matrix[3][3]){
+    /* 
+    Turns a list of 5 parameters into an intrinsic matrix
+    params[6] = {fx, fy, s, cx, cy} 
+    */
+    matrix[0][0] = params[0];
+    matrix[1][1] = params[1];
+    matrix[2][2] = 1.0f;
+    matrix[0][1] = params[2];
+    matrix[0][2] = params[3];
+    matrix[0][3] = params[4];
+    matrix[1][0] = 0.0f;
+    matrix[2][0] = 0.0f;
+    matrix[2][1] = 0.0f;
+}
+
+
+void apply_radial_distortion(float &x_dist, float &y_dist, 
+                    float x_correct, float y_correct,
+                    float k1, float k2, float k3){
+    /* 
+    Applies radial distortion to a point
+    */
+    float r2 = x_correct*x_correct + y_correct*y_correct;
+    float r4 = r2*r2;
+    float r6 = r4*r2;
+    float polynomial = 1.0f + k1*r2 + k2*r4 + k3*r6;
+    x_dist = x_correct*polynomial;
+    y_dist = y_correct*polynomial;
+}
+
+
+void remove_radial_distortion(float x_dist, float y_dist, 
+                    float &x_correct, float &y_correct,
+                    float k1, float k2, float k3){
+    /* 
+    Removes radial distortion from a point
+    */
+    x_correct = x_dist;
+    y_correct = y_dist;
+    for (int i=0; i<10; i++){
+        float r2 = x_correct*x_correct + y_correct*y_correct;
+        float r4 = r2*r2;
+        float r6 = r4*r2;
+        float polynomial = 1.0f + k1*r2 + k2*r4 + k3*r6;
+        x_correct = x_correct/polynomial;
+        y_correct = y_correct/polynomial;
+    }
+}
+
+
+
 void project_to_camera(kln::motor &R, 
                         std::vector<std::shared_ptr<kln::point>> &points, 
                         std::vector<std::shared_ptr<kln::point>> &output_points){
@@ -175,18 +228,6 @@ void find_camera(kln::line initial_biv,
 
     cost_tester(x, &op);
     std::cout << "post cost " << op << std::endl;
-
-    // // Check that the cost function evaluates the same way
-    // std::vector<const double*> parameters(2);
-    // parameters[0] = &initial_x[0];
-    // parameters[1] = &initial_x[1];
-    // cost_function->Evaluate(parameters.data(), &op, NULL);
-    // std::cout << "init cost " << op << std::endl;
-
-    // parameters[0] = &x[0];
-    // parameters[1] = &x[1];
-    // cost_function->Evaluate(parameters.data(), &op, NULL);
-    // std::cout << "end cost " << op << std::endl;
 
 
 }
