@@ -59,3 +59,16 @@ target_compile_options(generate_points
     -Wno-comment # Needed for doxygen
 )
 target_link_options(generate_points PRIVATE -fno-omit-frame-pointer -fsanitize=address)
+
+
+add_executable(test_ops test_ops.cpp)
+target_link_libraries(test_ops klein::klein_sse42 Ceres::ceres)
+
+target_compile_options(test_ops
+    PRIVATE
+    -fno-omit-frame-pointer
+    -fsanitize=address
+    -Wall
+    -Wno-comment # Needed for doxygen
+)
+target_link_options(test_ops PRIVATE -fno-omit-frame-pointer -fsanitize=address)

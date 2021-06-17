@@ -1,5 +1,6 @@
-
 #include <klein/klein.hpp>
+#include "cayley.h"
+#include "outer_exp.h"
 
 #include "ceres/ceres.h"
 
@@ -32,79 +33,99 @@ void generate_internal_matrix(float params[5], float matrix[3][3]){
 }
 
 
-void apply_tangential_distortion(float &x_dist, float &y_dist, 
-                    float x_correct, float y_correct,
-                    float p1, float p2){
+void apply_tangential_distortion(double &x_dist, double &y_dist, 
+                    double x_correct, double y_correct,
+                    double p1, double p2){
     /* 
     Applies tangential distortion to a point
     */
-   float r2 = x_correct*x_correct + y_correct*y_correct;
+   double r2 = x_correct*x_correct + y_correct*y_correct;
    x_dist = x_correct + 2*p1*x_correct*y_correct + p2*(r2 + 2*x_correct*x_correct);
    y_dist = y_correct + 2*p2*x_correct*y_correct + p1*(r2 + 2*y_correct*y_correct);
 }
 
 
-void remove_tangential_distortion(float x_dist, float y_dist, 
-                    float &x_correct, float &y_correct,
-                    float p1, float p2, 
+void remove_tangential_distortion(double x_dist, double y_dist, 
+                    double &x_correct, double &y_correct,
+                    double p1, double p2, 
                     std::uint8_t max_iterations=10){
     /* 
     Removes tangential distortion from a point.
-    We are just going to attempt the same inverse thing we did for the
-    radial distortion estimation, ie. just recursively have a crack at it.
+    We are just going to attempt the same iterative inverse thing we did for the
+    radial distortion estimation.
     */
    x_correct = x_dist;
    y_correct = y_dist;
-   float divisor_x = 1.0f;
-   float divisor_y = 1.0f;
-   float r2 = 1.0f;
-   for (std::uint8_t i=0; i<max_iterations){
+   double divisor_x = 1.0;
+   double divisor_y = 1.0;
+   double r2 = 1.0;
+   for (std::uint8_t i=0; i<max_iterations; i++){
        r2 = x_correct*x_correct + y_correct*y_correct;
-       divisor_x = 1.0f + 2*p1*y_correct + (p2*r2/x_correct) + 2*p2*x_correct;
-       divisor_y = 1.0f + 2*p2*x_correct + (p1*r2/x_correct) + 2*p1*y_correct;
-       x_correct = x_correct/divisor_x;
-       y_correct = y_correct/divisor_y;
+       divisor_x = 1.0 + 2*p1*y_correct + (p2*r2/x_correct) + 2*p2*x_correct;
+       divisor_y = 1.0 + 2*p2*x_correct + (p1*r2/x_correct) + 2*p1*y_correct;
+       x_correct = x_dist/divisor_x;
+       y_correct = y_dist/divisor_y;
    }
 }
 
 
-void apply_radial_distortion(float &x_dist, float &y_dist, 
-                    float x_correct, float y_correct,
-                    float k1, float k2, float k3=0.0f){
+void apply_radial_distortion(double &x_dist, double &y_dist, 
+                    double x_correct, double y_correct,
+                    double k1, double k2, double k3=0.0){
     /* 
     Applies radial distortion to a point
     */
-    float r2 = x_correct*x_correct + y_correct*y_correct;
-    float r4 = r2*r2;
-    float r6 = r4*r2;
-    float polynomial = 1.0f + k1*r2 + k2*r4 + k3*r6;
+    double r2 = x_correct*x_correct + y_correct*y_correct;
+    double r4 = r2*r2;
+    double r6 = r4*r2;
+    double polynomial = 1.0f + k1*r2 + k2*r4 + k3*r6;
     x_dist = x_correct*polynomial;
     y_dist = y_correct*polynomial;
 }
 
 
-void remove_radial_distortion(float x_dist, float y_dist, 
-                    float &x_correct, float &y_correct,
-                    float k1, float k2, float k3=0.0f, 
+void remove_radial_distortion_iterative(double x_dist, double y_dist, 
+                    double &x_correct, double &y_correct,
+                    double k1, double k2, double k3, 
                     std::uint8_t max_iterations=10){
     /* 
     Removes radial distortion from a point by a simple iterative method.
-    May fail for large distortions.
     */
     x_correct = x_dist;
     y_correct = y_dist;
-    float r2 = 1.0f;
-    float r4 = 1.0f;
-    float r6 = 1.0f;
-    float polynomial = 1.0f;
+    double r2 = 1.0;
+    double r4 = 1.0;
+    double r6 = 1.0;
+    double polynomial = 1.0;
     for (std::uint8_t i=0; i<max_iterations; i++){
         r2 = x_correct*x_correct + y_correct*y_correct;
         r4 = r2*r2;
         r6 = r4*r2;
-        polynomial = 1.0f + k1*r2 + k2*r4 + k3*r6;
-        x_correct = x_correct/polynomial;
-        y_correct = y_correct/polynomial;
+        polynomial = 1.0 + k1*r2 + k2*r4 + k3*r6;
+        x_correct = x_dist/polynomial;
+        y_correct = y_dist/polynomial;
     }
+}
+
+
+void remove_radial_distortion(double x_dist, double y_dist, 
+                    double &x_correct, double &y_correct,
+                    double k1, double k2, double k3){
+    /* 
+    Removes radial distortion from a point using the method presented in:
+    Pierre Drap and Julien Lefevre: An Exact Formula for Calculating Inverse Radial Lens Distortions
+    */
+    double r2 = x_dist*x_dist + y_dist*y_dist;
+    double r4 = r2*r2;
+    double r6 = r4*r2;
+
+    double b1 = -k1;
+    double b2 = 3*k1*k1 - k2;
+    double b3 = -12*k1*k1*k1 + 8*k1*k2 - k3;
+
+    double polynomial = 1.0 + b1*r2 + b2*r4 + b3*r6;
+    x_correct = x_dist*polynomial;
+    y_correct = y_dist*polynomial;
 }
 
 
