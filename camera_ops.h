@@ -32,9 +32,45 @@ void generate_internal_matrix(float params[5], float matrix[3][3]){
 }
 
 
+void apply_tangential_distortion(float &x_dist, float &y_dist, 
+                    float x_correct, float y_correct,
+                    float p1, float p2){
+    /* 
+    Applies tangential distortion to a point
+    */
+   float r2 = x_correct*x_correct + y_correct*y_correct;
+   x_dist = x_correct + 2*p1*x_correct*y_correct + p2*(r2 + 2*x_correct*x_correct);
+   y_dist = y_correct + 2*p2*x_correct*y_correct + p1*(r2 + 2*y_correct*y_correct);
+}
+
+
+void remove_tangential_distortion(float x_dist, float y_dist, 
+                    float &x_correct, float &y_correct,
+                    float p1, float p2, 
+                    std::uint8_t max_iterations=10){
+    /* 
+    Removes tangential distortion from a point.
+    We are just going to attempt the same inverse thing we did for the
+    radial distortion estimation, ie. just recursively have a crack at it.
+    */
+   x_correct = x_dist;
+   y_correct = y_dist;
+   float divisor_x = 1.0f;
+   float divisor_y = 1.0f;
+   float r2 = 1.0f;
+   for (std::uint8_t i=0; i<max_iterations){
+       r2 = x_correct*x_correct + y_correct*y_correct;
+       divisor_x = 1.0f + 2*p1*y_correct + (p2*r2/x_correct) + 2*p2*x_correct;
+       divisor_y = 1.0f + 2*p2*x_correct + (p1*r2/x_correct) + 2*p1*y_correct;
+       x_correct = x_correct/divisor_x;
+       y_correct = y_correct/divisor_y;
+   }
+}
+
+
 void apply_radial_distortion(float &x_dist, float &y_dist, 
                     float x_correct, float y_correct,
-                    float k1, float k2, float k3){
+                    float k1, float k2, float k3=0.0f){
     /* 
     Applies radial distortion to a point
     */
@@ -49,22 +85,27 @@ void apply_radial_distortion(float &x_dist, float &y_dist,
 
 void remove_radial_distortion(float x_dist, float y_dist, 
                     float &x_correct, float &y_correct,
-                    float k1, float k2, float k3){
+                    float k1, float k2, float k3=0.0f, 
+                    std::uint8_t max_iterations=10){
     /* 
-    Removes radial distortion from a point
+    Removes radial distortion from a point by a simple iterative method.
+    May fail for large distortions.
     */
     x_correct = x_dist;
     y_correct = y_dist;
-    for (int i=0; i<10; i++){
-        float r2 = x_correct*x_correct + y_correct*y_correct;
-        float r4 = r2*r2;
-        float r6 = r4*r2;
-        float polynomial = 1.0f + k1*r2 + k2*r4 + k3*r6;
+    float r2 = 1.0f;
+    float r4 = 1.0f;
+    float r6 = 1.0f;
+    float polynomial = 1.0f;
+    for (std::uint8_t i=0; i<max_iterations; i++){
+        r2 = x_correct*x_correct + y_correct*y_correct;
+        r4 = r2*r2;
+        r6 = r4*r2;
+        polynomial = 1.0f + k1*r2 + k2*r4 + k3*r6;
         x_correct = x_correct/polynomial;
         y_correct = y_correct/polynomial;
     }
 }
-
 
 
 void project_to_camera(kln::motor &R, 
@@ -231,7 +272,6 @@ void find_camera(kln::line initial_biv,
 
 
 }
-
 
 
 
