@@ -71,7 +71,7 @@ void remove_tangential_distortion(double x_dist, double y_dist,
 
 void apply_radial_distortion(double &x_dist, double &y_dist, 
                     double x_correct, double y_correct,
-                    double k1, double k2, double k3=0.0){
+                    double k1, double k2, double k3){
     /* 
     Applies radial distortion to a point
     */
